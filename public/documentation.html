@@ -1,12 +1,215 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            font-size: 35px;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow: auto;
+        }
+        code {
+            font-family: "Courier New", Courier, monospace;
+            background: #adcdd2;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>DOCUMENTATION<h1>
-    <p>The goal is to build the server-side component of a �movies� web application. The web
-application will provide users with access to information about different
-movies, directors, and genres. Users will be able to sign up, update their
-personal information, and create a list of their favorite movies.<p>
+    <h1>Documentation</h1>
+    <p>The goal is to build the server-side component of a movie web application. The web application will provide users with access to information about different movies, directors, and genres. Users will be able to sign up, update their personal information, and create a list of their favorite movies.</p>
+
+    <h2>User Endpoints</h2>
+
+    <h3>Create a User</h3>
+    <p><strong>Endpoint:</strong> <code>POST /users</code></p>
+    <p><strong>Description:</strong> Creates a new user with a unique ID. The request body must include a <code>name</code> field.</p>
+    <p><strong>Request Body:</strong></p>
+    <pre><code>{
+    "name": "string"
+}</code></pre>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>201 Created</code>: Returns the newly created user object.</li>
+        <li><code>400 Bad Request</code>: If the <code>name</code> field is missing.</li>
+    </ul>
+
+    <h3>Add a Favorite Movie to a User</h3>
+    <p><strong>Endpoint:</strong> <code>POST /users/:id/:movieTitle</code></p>
+    <p><strong>Description:</strong> Adds a favorite movie to the specified user by user ID.</p>
+    <p><strong>Path Parameters:</strong></p>
+    <ul>
+        <li><code>id</code>: User ID</li>
+        <li><code>movieTitle</code>: Title of the movie to be added to the user's favorites</li>
+    </ul>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Confirms that the movie has been added.</li>
+        <li><code>400 Bad Request</code>: If the user does not exist.</li>
+    </ul>
+
+    <h3>Update a User's Name</h3>
+    <p><strong>Endpoint:</strong> <code>PUT /users/:id</code></p>
+    <p><strong>Description:</strong> Updates the name of the specified user by user ID.</p>
+    <p><strong>Path Parameters:</strong></p>
+    <ul>
+        <li><code>id</code>: User ID</li>
+    </ul>
+    <p><strong>Request Body:</strong></p>
+    <pre><code>{
+    "name": "string"
+}</code></pre>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns the updated user object.</li>
+        <li><code>400 Bad Request</code>: If the user does not exist.</li>
+    </ul>
+
+    <h3>Delete a Favorite Movie from a User</h3>
+    <p><strong>Endpoint:</strong> <code>DELETE /users/:id/:movieTitle</code></p>
+    <p><strong>Description:</strong> Removes a favorite movie from the specified user by user ID.</p>
+    <p><strong>Path Parameters:</strong></p>
+    <ul>
+        <li><code>id</code>: User ID</li>
+        <li><code>movieTitle</code>: Title of the movie to be removed from the user's favorites</li>
+    </ul>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Confirms that the movie has been removed.</li>
+        <li><code>400 Bad Request</code>: If the user does not exist.</li>
+    </ul>
+
+    <h3>Delete a User</h3>
+    <p><strong>Endpoint:</strong> <code>DELETE /users/:id</code></p>
+    <p><strong>Description:</strong> Deletes the specified user by user ID.</p>
+    <p><strong>Path Parameters:</strong></p>
+    <ul>
+        <li><code>id</code>: User ID</li>
+    </ul>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Confirms that the user has been removed.</li>
+        <li><code>400 Bad Request</code>: If the user does not exist.</li>
+    </ul>
+
+    <h2>Movie Endpoints</h2>
+
+    <h3>Get All Movies</h3>
+    <p><strong>Endpoint:</strong> <code>GET /movies</code></p>
+    <p><strong>Description:</strong> Retrieves a list of all top movies.</p>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns an array of movie objects.</li>
+    </ul>
+
+    <h3>Get a Movie by Title</h3>
+    <p><strong>Endpoint:</strong> <code>GET /movies/:title</code></p>
+    <p><strong>Description:</strong> Retrieves details of a specific movie by its title.</p>
+    <p><strong>Path Parameters:</strong></p>
+    <ul>
+        <li><code>title</code>: Title of the movie</li>
+    </ul>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns the movie object.</li>
+        <li><code>400 Bad Request</code>: If the movie does not exist.</li>
+    </ul>
+
+    <h3>Get Movies by Genre</h3>
+    <p><strong>Endpoint:</strong> <code>GET /movies/genre/:genreName</code></p>
+    <p><strong>Description:</strong> Retrieves movies of a specific genre.</p>
+    <p><strong>Path Parameters:</strong></p>
+    <ul>
+        <li><code>genreName</code>: Name of the genre</li>
+    </ul>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns the genre object of the first movie found with the specified genre.</li>
+        <li><code>400 Bad Request</code>: If the genre does not exist.</li>
+    </ul>
+
+    <h3>Get Movies by Director</h3>
+    <p><strong>Endpoint:</strong> <code>GET /movies/director/:directorName</code></p>
+    <p><strong>Description:</strong> Retrieves movies directed by a specific director.</p>
+    <p><strong>Path Parameters:</strong></p>
+    <ul>
+        <li><code>directorName</code>: Name of the director</li>
+    </ul>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns the director object of the first movie found with the specified director.</li>
+        <li><code>400 Bad Request</code>: If the director does not exist.</li>
+    </ul>
+
+    <h2>Miscellaneous Endpoints</h2>
+
+    <h3>Welcome</h3>
+    <p><strong>Endpoint:</strong> <code>GET /</code></p>
+    <p><strong>Description:</strong> Returns a welcome message.</p>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns a welcome message string.</li>
+    </ul>
+
+    <h3>Get All Users</h3>
+    <p><strong>Endpoint:</strong> <code>GET /users</code></p>
+    <p><strong>Description:</strong> Retrieves a list of all users.</p>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns an array of user objects.</li>
+    </ul>
+
+    <h3>Get Documentation</h3>
+    <p><strong>Endpoint:</strong> <code>GET /documentation</code></p>
+    <p><strong>Description:</strong> Serves the
+
+
+
+did you finish?
+ChatGPT
+Apologies for the abrupt cutoff earlier. Here is the continuation and completion of the corrected HTML document:
+
+html
+Copy code
+    documentation HTML file.</p>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>200 OK</code>: Returns the documentation HTML file.</li>
+    </ul>
+
+    <h3>Error Handling</h3>
+    <p><strong>Endpoint:</strong> <code>N/A</code></p>
+    <p><strong>Description:</strong> Middleware to handle errors and return a generic error message.</p>
+    <p><strong>Responses:</strong></p>
+    <ul>
+        <li><code>500 Internal Server Error</code>: Returns a generic error message.</li>
+    </ul>
+
+    <h2>Static Files</h2>
+
+    <h3>Serve Static Files</h3>
+    <p><strong>Description:</strong> Serves static files from the <code>public</code> directory.</p>
+
+    <h2>Logging</h2>
+
+    <h3>Request Logging</h3>
+    <p><strong>Description:</strong> Logs all incoming requests using Morgan.</p>
 </body>
 </html>
