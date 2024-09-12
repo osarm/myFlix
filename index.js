@@ -13,15 +13,11 @@ mongoose.connect( process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifie
     .catch((error) => console.error('Error connecting to MongoDB:', error));
 
 const morgan = require('morgan');
-
 const { check, validationResult } = require('express-validator');
-
 const bodyParser = require('body-parser');
-
 const app = express();
 
 app.use(bodyParser.json());
-
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const cors = require('cors');
@@ -39,7 +35,6 @@ app.use(cors({
   }));
 
 let auth = require('./auth.js')(app);
-
 const passport = require('passport');
 require('./passport');
 
@@ -98,30 +93,44 @@ app.post('/users',
 
 // UPDATE
 // A user's info, by username
-app.put('/users/:Username', passport.authenticate('jwt', {session: false}), async (req, res) => {
-    await Users.findOneAndUpdate({ Username: req.params.Username }, {
-        $set:
-        {
-            Username: req.body.Username,
-            Password: req.body.Password,
-            Email: req.body.Email,
-            Birthday: req.body.Birthday
-        }
-    },
-        { new: true }) // This line makes sure that the updated document is returned
+app.put('/users/:Username', passport.authenticate('jwt', {session: false}),
+[
+    check('Username', 'Username must be at least 5 characters').optional().isLength({ min: 5 }),
+    check('Username', 'Username must only contain alphanumeric characters').optional().isAlphanumeric(),
+    check('Password', 'Password cannot be empty').optional().not().isEmpty(),
+    check('Email', 'Email must be valid').optional().isEmail()
+],
+ async (req, res) => {
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ errors: errors.array() });
+    }
+
+    let updatedData = req.body;
+    if (req.body.Password) {
+        updatedData.Password = Users.hashPassword(req.body.Password);  // Rehash password if updated
+    }
+
+await Users.findOneAndUpdate({ Username: req.params.Username }, { $set: updatedData }, { new: true })
         .then((updatedUser) => {
             res.json(updatedUser);
         })
         .catch((err) => {
             console.error(err);
             res.status(500).send('Error: ' + err);
-        })
-
+        });
 });
 
 // UPDATE
 // Add a movie to a user's list of favorites
-app.patch('/users/:Username/movies/:MovieID', passport.authenticate('jwt', {session: false}), async (req, res) => {
+app.patch('/users/:Username/movies/:MovieID', passport.authenticate('jwt', {session: false}), [
+    check('MovieID', 'Movie ID must be a valid MongoDB ObjectId').isMongoId()
+], async (req, res) => {
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ errors: errors.array() });
+    }
+
     await Users.findOneAndUpdate({ Username: req.params.Username }, {
         $push: { FavoriteMovies: req.params.MovieID }
     },
@@ -137,7 +146,14 @@ app.patch('/users/:Username/movies/:MovieID', passport.authenticate('jwt', {sess
 
 // DELETE
 // Delete a movie from a user's list of favorites
-app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', {session: false}), async (req, res) => {
+app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', {session: false}), [
+    check('MovieID', 'Movie ID must be a valid MongoDB ObjectId').isMongoId()
+],
+  async (req, res) => {
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ errors: errors.array() });
+    }
     await Users.findOneAndUpdate({ Username: req.params.Username }, {
         $pull: { FavoriteMovies: req.params.MovieID }
     },
@@ -182,8 +198,10 @@ app.get('/movies', passport.authenticate('jwt', {session: false}), async (req, r
 });
 
 // READ
-app.get('/movies/:title', passport.authenticate('jwt', {session: false}), async (req, res) => {
-
+app.get('/movies/:title', passport.authenticate('jwt', {session: false}), [
+    check('title', 'Title is required and should be a string').isString().not().isEmpty()
+],
+ async (req, res) => {
     const title = req.params.title;
     const movie = await Movies.findOne({ Title: title });
 
@@ -196,7 +214,10 @@ app.get('/movies/:title', passport.authenticate('jwt', {session: false}), async 
 });
 
 // READ
-app.get('/movies/genre/:genreName', passport.authenticate('jwt', {session: false}), async (req, res) => {
+app.get('/movies/genre/:genreName', passport.authenticate('jwt', {session: false}), [
+    check('genreName', 'Genre name is required and must be a string').isString().not().isEmpty()
+], 
+async (req, res) => {
     try {
         const genreName = req.params.genreName;
         const movie = await Movies.findOne({ 'Genre.Name': genreName });
@@ -213,7 +234,10 @@ app.get('/movies/genre/:genreName', passport.authenticate('jwt', {session: false
 });
 
 // READ
-app.get('/movies/directors/:directorName', passport.authenticate('jwt', {session: false}), async (req, res) => {
+app.get('/movies/directors/:directorName', passport.authenticate('jwt', {session: false}), [
+    check('directorName', 'Director name is required and must be a string').isString().not().isEmpty()
+],
+ async (req, res) => {
     try {
         const directorName = req.params.directorName;
         const movie = await Movies.findOne({ 'Director.Name': directorName });
@@ -242,7 +266,10 @@ app.get('/users', passport.authenticate('jwt', {session: false}), async (req, re
 });
 
 //READ
-app.get('/users/:Username', passport.authenticate('jwt', {session: false}), async (req, res) => {
+app.get('/users/:Username', passport.authenticate('jwt', {session: false}), [
+    check('Username', 'Username is required and must be alphanumeric').isAlphanumeric()
+],
+ async (req, res) => {
     await Users.findOne({ Username: req.params.Username })
         .then((user) => {
             res.json(user);
