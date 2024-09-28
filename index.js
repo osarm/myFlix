@@ -35,6 +35,7 @@ app.use(cors({
   }));
 
 let auth = require('./auth.js')(app);
+const jwt = require('jsonwebtoken');
 const passport = require('passport');
 require('./passport');
 
@@ -42,6 +43,36 @@ require('./passport');
 app.get('/', (req, res) => {
     res.send('Welcome to myFlix!');
 });
+
+//login
+app.post('/login', (req, res) => {
+    const { Username, Password } = req.body;
+  
+    Users.findOne({ Username: Username })
+      .then((user) => {
+        if (!user) {
+          return res.status(400).send('No such user found');
+        }
+  
+        if (!user.validatePassword(Password)) {
+          return res.status(400).send('Incorrect password');
+        }
+  
+        const token = jwt.sign({ Username: user.Username, _id: user._id }, 'your_jwt_secret', {
+          expiresIn: '7d',
+        });
+  
+        return res.status(200).json({
+          user: user,
+          token: token,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send('Error: ' + error);
+      });
+  });
+
 //CREATE
 //Add a user
 app.post('/users',
