@@ -49,47 +49,6 @@ app.get('/', (req, res) => {
     res.send('Welcome to myFlix!');
 });
 
-//login
-app.post('/login', async (req, res) => {
-    const { Username, Password } = req.body;
-
-    try {
-        // Find the user by username
-        const user = await Users.findOne({ Username: Username });
-
-        // If no user found, return an error
-        if (!user) {
-            return res.status(400).json({ message: 'No such user found' });
-        }
-
-        // Validate the provided password
-        const isValidPassword = await user.validatePassword(Password);
-        if (!isValidPassword) {
-            return res.status(400).json({ message: 'Incorrect password' });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign({ Username: user.Username, _id: user._id }, 'your_jwt_secret', {
-            expiresIn: '7d',
-        });
-
-        // Return user data and token, excluding sensitive fields like password
-        return res.status(200).json({
-            user: {
-                _id: user._id,
-                Username: user.Username,
-                Email: user.Email,
-                Birthday: user.Birthday,
-                FavoriteMovies: user.FavoriteMovies
-            },
-            token: token,
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
 //CREATE
 //Add a user
 app.post('/users',
