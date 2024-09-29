@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const cors = require('cors');
-let allowedOrigins = ['http:localhost:8080', 'http://testsite.com', 'http://localhost:1234', 'https://movies-fx-6586d0468f8f.herokuapp.com'];
+let allowedOrigins = ['http://localhost:8080', 'http://localhost:1234', 'https://movies-fx-6586d0468f8f.herokuapp.com'];
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -38,6 +38,7 @@ let auth = require('./auth.js')(app);
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 require('./passport');
+const bcrypt = require('bcrypt');
 
 // READ
 app.get('/', (req, res) => {
@@ -45,33 +46,45 @@ app.get('/', (req, res) => {
 });
 
 //login
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { Username, Password } = req.body;
-  
-    Users.findOne({ Username: Username })
-      .then((user) => {
+
+    try {
+        // Find the user by username
+        const user = await Users.findOne({ Username: Username });
+
+        // If no user found, return an error
         if (!user) {
-          return res.status(400).send('No such user found');
+            return res.status(400).json({ message: 'No such user found' });
         }
-  
-        if (!user.validatePassword(Password)) {
-          return res.status(400).send('Incorrect password');
+
+        // Validate the provided password
+        const isValidPassword = user.validatePassword(Password);
+        if (!isValidPassword) {
+            return res.status(400).json({ message: 'Incorrect password' });
         }
-  
+
+        // Generate JWT token
         const token = jwt.sign({ Username: user.Username, _id: user._id }, 'your_jwt_secret', {
-          expiresIn: '7d',
+            expiresIn: '7d',
         });
-  
+
+        // Return user data and token, excluding sensitive fields like password
         return res.status(200).json({
-          user: user,
-          token: token,
+            user: {
+                _id: user._id,
+                Username: user.Username,
+                Email: user.Email,
+                Birthday: user.Birthday,
+                FavoriteMovies: user.FavoriteMovies
+            },
+            token: token,
         });
-      })
-      .catch((error) => {
-        console.error(error);
-        res.status(500).send('Error: ' + error);
-      });
-  });
+    } catch (error) {
+        console.error('Login error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 //CREATE
 //Add a user
