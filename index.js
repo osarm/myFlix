@@ -63,7 +63,7 @@ app.post('/login', async (req, res) => {
         }
 
         // Validate the provided password
-        const isValidPassword = user.validatePassword(Password);
+        const isValidPassword = await user.validatePassword(Password);
         if (!isValidPassword) {
             return res.status(400).json({ message: 'Incorrect password' });
         }
