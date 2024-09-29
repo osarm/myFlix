@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Models = require('./models.js');
+const morgan = require('morgan');
 
 const Movies = Models.Movie;
 const Users = Models.User;
@@ -12,14 +13,13 @@ mongoose.connect( process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifie
     .then(() => console.log('Connected to MongoDB'))
     .catch((error) => console.error('Error connecting to MongoDB:', error));
 
-const morgan = require('morgan');
+const app = express();
+
 app.use(morgan('common'));
 
 const { check, validationResult } = require('express-validator');
-    check('Username', 'Username contains non-alphanumeric characters - not allowed.').isAlphanumeric()
 
 const bodyParser = require('body-parser');
-const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
