@@ -13,7 +13,11 @@ mongoose.connect( process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifie
     .catch((error) => console.error('Error connecting to MongoDB:', error));
 
 const morgan = require('morgan');
+app.use(morgan('common'));
+
 const { check, validationResult } = require('express-validator');
+    check('Username', 'Username contains non-alphanumeric characters - not allowed.').isAlphanumeric()
+
 const bodyParser = require('body-parser');
 const app = express();
 
@@ -145,17 +149,32 @@ app.put('/users/:Username', passport.authenticate('jwt', {session: false}),
     check('Email', 'Email must be valid').optional().isEmail()
 ],
  async (req, res) => {
+    // check the validation object for errors
     let errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(422).json({ errors: errors.array() });
     }
-
+      // CONDITION TO CHECK ADDED HERE
+      if (req.user.Username !== req.params.Username) {
+        return res.status(400).send('Permission denied');
+      }
+      // CONDITION ENDS
     let updatedData = req.body;
     if (req.body.Password) {
         updatedData.Password = Users.hashPassword(req.body.Password);  // Rehash password if updated
     }
 
-await Users.findOneAndUpdate({ Username: req.params.Username }, { $set: updatedData }, { new: true })
+    await Users.findOneAndUpdate( { Username: req.params.Username },
+        {
+          $set: {
+            Username: req.body.Username,
+            Password: req.body.Password,
+            Email: req.body.Email,
+            Birthday: req.body.Birthday,
+          },
+        },
+        { new: true }
+      )
         .then((updatedUser) => {
             res.json(updatedUser);
         })
