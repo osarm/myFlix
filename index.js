@@ -317,7 +317,7 @@ app.get('/movies/directors/:directorName', passport.authenticate('jwt', {session
 });
 
 //READ
-app.get('/users', passport.authenticate('jwt', {session: false}), async (req, res) => {
+app.post('/users', passport.authenticate('jwt', {session: false}), async (req, res) => {
     await Users.find()
         .then((users) => {
             res.status(201).json(users);
@@ -329,7 +329,7 @@ app.get('/users', passport.authenticate('jwt', {session: false}), async (req, re
 });
 
 //READ
-app.get('/users/:Username', passport.authenticate('jwt', {session: false}), [
+app.post('/users/:Username', passport.authenticate('jwt', {session: false}), [
     check('Username', 'Username is required and must be alphanumeric').isAlphanumeric()
 ],
  async (req, res) => {
