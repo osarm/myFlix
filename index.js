@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const cors = require('cors');
-let allowedOrigins = ['http://localhost:8080', 'http://localhost:1234', 'https://movies-fx-6586d0468f8f.herokuapp.com'];
+let allowedOrigins = ['http://localhost:8080', 'http://localhost:1234', 'https://movies-fx-6586d0468f8f.herokuapp.com', 'https://moviesfx.netlify.app'];
 
 app.use(cors({
     origin: (origin, callback) => {
